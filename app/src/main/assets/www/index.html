@@ -20,7 +20,7 @@ window.RufflePlayer = window.RufflePlayer || {};
 window.RufflePlayer.config = {
   autoplay: 'on', unmuteOverlay: 'visible', letterbox: 'on', contextMenu: 'off',
   allowScriptAccess: true, allowNetworking: 'all', publicPath: 'ruffle/',
-  quality: 'high'
+  quality: 'high', scale: 'showAll', forceScale: true
 };
 let player;
 let cf2Ready = false;
@@ -115,6 +115,8 @@ window.addEventListener('load', async () => {
     const ruffle = window.RufflePlayer.newest();
     if (!ruffle) throw new Error('Ruffle runtime missing');
     player = ruffle.createPlayer();
+    player.style.width = '100%';
+    player.style.height = '100%';
     document.getElementById('game').appendChild(player);
     await player.ruffle().load({
       url:'/game/chaos-faction-2.swf', allowNetworking:'all',

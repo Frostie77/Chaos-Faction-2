@@ -8,7 +8,7 @@ const script = html.match(/<script>([\s\S]*?)<\/script>/)[1];
 const events = [], callbacks = {};
 let suspended = false, loaded;
 const api = {load: async config => {loaded = config;}, suspend: () => {suspended = true;}, resume: () => {suspended = false;}};
-const player = {ruffle: () => api, focus: () => {}, dispatchEvent: event => events.push(event)};
+const player = {style: {}, ruffle: () => api, focus: () => {}, dispatchEvent: event => events.push(event)};
 const nodes = {
   game: {appendChild: () => {}, style: {}, getBoundingClientRect: () => ({width:800, height:600})},
   status: {remove: () => {}, textContent: ''}
