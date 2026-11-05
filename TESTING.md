@@ -8,6 +8,17 @@ The input bridge merges ownership of shared Up/Jump and Down/Shield keys. Touch,
 
 The source initially uses the pinned FrostFrontend revision `2147f7ab4e183ea6b19b3d8bedf6bbe04b05c56c` and Ruffle 0.7.1. The CF2-specific frontend profile, controls, storage, package and update feed are independent of other ports.
 
+## Completed checks
+
+[GitHub Actions run 42064012459](https://github.com/Frostie77/Chaos-Faction-2/actions/runs/42064012459), source `bc1f604ed4665b59480cb8bfa32774b1fecac75d`:
+
+- Debug and unsigned Release APKs compile successfully against Android 35.
+- Both APKs pass package/version, Android 8 minimum, launcher resource, pinned Ruffle file hashes and no-bundled-SWF checks.
+- The real controller profile initializes with fresh and stale preferences. Input ownership/modifier/lifecycle checks and all 20 updater scenarios pass.
+- The Windows helper parses under Windows PowerShell 5.1.
+
+A desktop Chromium smoke test loaded the exact supplied SWF using the pinned runtime and production HTML at the Android virtual asset origin, with external requests blocked. The unmodified preloader completed, and the main menu, character selection and Town Tussle campaign scene rendered. The production input bridge also opened the in-game Space pause menu. Ruffle created the game's `CF2` save object. At 1280×720, the original display fills a centered 960×720 viewport. This checks browser compatibility and wrapper sizing; Odin performance, audio, native input routing and save restoration still require the device checks below.
+
 ## Odin acceptance
 
 Gameplay, performance, double jump, shield/stomp, both attacks, held weapon melee, weapon drop, touch layout, remapping, sound/speaker test, saves across restarts and background/resume need device confirmation before release. Full-game compatibility and multiplayer controller assignment are not yet established.
