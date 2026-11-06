@@ -54,6 +54,7 @@ jobs:
                   names = set(archive.namelist())
                   assert not any(n.lower().endswith('.swf') for n in names), 'Game bundled'
                   assert 'assets/www/index.html' in names
+                  assert any(n.startswith('res/') and n.endswith('/launcher_art.png') for n in names), 'Approved icon artwork missing'
                   for name, digest in runtime.items():
                       assert hashlib.sha256(archive.read('assets/www/ruffle/' + name)).hexdigest() == digest
               badging = subprocess.check_output([aapt,'dump','badging',str(apk)],text=True)

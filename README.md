@@ -34,7 +34,7 @@ In **Touch Settings → Edit Touch Layout**, drag any action button or the movem
 
 The layout editor and position storage are shared FrostFrontend features. CF2 supplies its own control artwork and game actions and retains its existing saved layouts when moving to the shared implementation.
 
-FrostFrontend includes original 800×600 proportions or stretch display, sound settings, a speaker test, controller mapping and touch layout settings. The initial CF2 launcher icon is temporary.
+FrostFrontend includes original 800×600 proportions or stretch display, sound settings, a speaker test, controller mapping and touch layout settings. The launcher uses the approved metallic CF2 artwork with an orange blast, with adaptive and legacy Android icon resources.
 
 ## Updates
 

@@ -8,10 +8,8 @@ if ($looseSwfs.Count -gt 0) {
     throw 'SWF must not be under source assets. Import the game via the app file picker.'
 }
 $libGradle = Join-Path $PSScriptRoot 'third_party\FrostFrontend\frostfrontend\build.gradle'
-if (-not (Test-Path $libGradle)) {
-    & git submodule update --init --recursive
-    if ($LASTEXITCODE -ne 0 -or -not (Test-Path $libGradle)) { throw 'FrostFrontend submodule missing.' }
-}
+& git submodule update --init --recursive
+if ($LASTEXITCODE -ne 0 -or -not (Test-Path $libGradle)) { throw 'FrostFrontend submodule missing or could not update to the pinned revision.' }
 $javaCandidates = @($env:JAVA_HOME,
     'C:\Program Files\Eclipse Adoptium\jdk-17.0.20.101-hotspot',
     (Join-Path $env:ProgramFiles 'Android\Android Studio\jbr'))

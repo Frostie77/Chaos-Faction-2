@@ -30,3 +30,7 @@ Gameplay, performance, double jump, shield/stomp, both attacks, held weapon mele
 ## Shared touch layout integration
 
 The layout editor now comes from FrostFrontend, pinned by `FROSTFRONTEND_REVISION`. CF2 subclasses `FrostTouchControls` for artwork and game input and registers it with `FrostFrontendView.setTouchControls`. The library supplies the Touch Settings row, toolbar, drag handling, persistent positions and pause-safe editing. CF2 continues using its existing layout preference store and stable control IDs. CI runs the shared library tests and the nine CF2 Android touch-layout tests before building Debug and Release.
+
+## Approved launcher artwork
+
+The metallic CF2 illustration approved in chat is packaged as five legacy density icons and an adaptive icon. The adaptive foreground uses a 14 dp inset to keep the logo visible under round and squircle masks. The old anydpi placeholder was removed. CI checks that the approved artwork resource is present in both APKs. The Windows helper now always updates the FrostFrontend submodule to the pinned revision before compiling, including when an older checkout is already present.
