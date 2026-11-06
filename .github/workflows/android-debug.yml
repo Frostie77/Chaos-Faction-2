@@ -50,11 +50,12 @@ jobs:
           runtime = json.loads(Path('ruffle-0.7.1.sha256.json').read_text())
           for variant, filename in [('debug','app-debug.apk'),('release','app-release-unsigned.apk')]:
               apk = Path('app/build/outputs/apk') / variant / filename
+              resources = subprocess.check_output([aapt,'dump','resources',str(apk)],text=True)
+              assert re.search(r'\bdrawable/launcher_art\b',resources), 'Approved icon artwork resource missing'
               with ZipFile(apk) as archive:
                   names = set(archive.namelist())
                   assert not any(n.lower().endswith('.swf') for n in names), 'Game bundled'
                   assert 'assets/www/index.html' in names
-                  assert any(n.startswith('res/') and n.endswith('/launcher_art.png') for n in names), 'Approved icon artwork missing'
                   for name, digest in runtime.items():
                       assert hashlib.sha256(archive.read('assets/www/ruffle/' + name)).hexdigest() == digest
               badging = subprocess.check_output([aapt,'dump','badging',str(apk)],text=True)
