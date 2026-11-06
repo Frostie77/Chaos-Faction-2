@@ -2,17 +2,15 @@
 
 An unofficial Android adaptation of Chaos Faction 2, powered by Ruffle and FrostFrontend. Requires Android 8.0 or newer.
 
-This is an initial development build for Odin testing. Import your own `chaos-faction-2-5645.swf` after installation; the game is not bundled with the source or APK.
+[Download Android v0.1.0](https://github.com/Frostie77/Chaos-Faction-2/releases/download/v0.1.0/Chaos-Faction-2-v0.1.0-Android.apk) · [Release notes](https://github.com/Frostie77/Chaos-Faction-2/releases/tag/v0.1.0)
 
-## Build and install
+## Install and play
 
-Clone with submodules, then run this in the `Chaos-Faction-2` folder with your Odin connected and USB debugging authorized:
+1. Install the APK linked above.
+2. Download the [original Chaos Faction 2 SWF from Armor Games](https://cache.armorgames.com/files/games/chaos-faction-2-5645.swf).
+3. Open the app and select `chaos-faction-2-5645.swf`.
 
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\build-test.ps1
-```
-
-The helper uses your PC's existing Android Debug signing identity and installs with `adb install -r`. Open the app and select your SWF. Menus use the touchscreen. The imported game, saves and settings are stored privately by this app.
+The game file is not bundled with the source or APK. The signed v0.1.0 release was tested on the AYN Odin 2 Portal. Other devices and multiplayer controller assignment have not yet been verified.
 
 ## Default controller controls
 
@@ -38,9 +36,21 @@ FrostFrontend includes original 800×600 proportions or stretch display, sound s
 
 ## Updates
 
-The stable checker is isolated to `Frostie77/Chaos-Faction-2` and package `io.github.frostie77.chaosfaction2`. No stable release is published yet. Development APKs are excluded from stable updates. Public release signing and feed activation follow device testing.
+The stable update feed is active for **v0.1.0**, Android build **2**. In FrostFrontend, open **Updates → Check for Updates**. Optional startup checks are also available. An available update opens its verified GitHub release page; APK installation remains a user action.
 
-The first signed candidate is **v0.1.0**, Android build **2**. [Release preparation](RELEASING.md) and [draft notes](RELEASE_DRAFT.md) are included; the public signing key is created and kept on the owner's PC.
+Future public updates use the same package and permanent release key with a higher Android version code. Development APKs are excluded from stable updates. See [release preparation](RELEASING.md) for signing and publication order.
+
+## Build from source
+
+For a development build, clone with submodules, then run this in the `Chaos-Faction-2` folder with your Odin connected and USB debugging authorized:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\build-test.ps1
+```
+
+The helper uses your PC's existing Android Debug signing identity and installs with `adb install -r`. Open the app and select your SWF. Menus use the touchscreen. The imported game, saves and settings are stored privately by this app.
+
+Debug APKs use the PC's test signing key and cannot directly replace the separately signed public APK. Use the published APK for normal installation.
 
 ## Credits
 

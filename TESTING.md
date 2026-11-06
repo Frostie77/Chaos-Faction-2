@@ -34,3 +34,11 @@ The layout editor now comes from FrostFrontend, pinned by `FROSTFRONTEND_REVISIO
 ## Approved launcher artwork
 
 The metallic CF2 illustration approved in chat is packaged as five legacy density icons and an adaptive icon. The adaptive foreground uses a 14 dp inset to keep the logo visible under round and squircle masks. The old anydpi placeholder was removed. CI checks that the approved artwork resource is present in both APKs. The Windows helper now always updates the FrostFrontend submodule to the pinned revision before compiling, including when an older checkout is already present.
+
+## Published v0.1.0 validation
+
+The owner installed the separately signed Release APK on the Odin 2 Portal and confirmed gameplay and controls work. The published `v0.1.0` tag resolves to build source `8294635bb705b5be2337ebf140e6985bdcf4d2d0`; the feed retains that source rather than the later activation commit.
+
+The public APK was downloaded independently and verified at 30,487,132 bytes with SHA-256 `8b5ab276f9ec77da8fc9dae8ec042d16d44f3d34ab3364591b56a9afe54d8b35`. Its published checksum matches. Google's apksig 8.9.2 verifies v2/v3 signatures and certificate SHA-256 `807a5ceb18503c6da705f5105f93ae97cee22cf3e9233c038706f0236f09f280`. Its pinned Ruffle files match, its HTML matches the source after line-ending normalization, its decoded launcher artwork matches, and it contains no SWF.
+
+The unmodified production update verifier was also exercised with the staged feed, fetched public release metadata and the certificate extracted from that public APK, using the existing controlled HTTPS test transport. Current-release, simulated older signed install, Debug exclusion, different-signer rejection and Android 8 certificate fallback checks passed. This validates release metadata and decision logic; it does not represent a device update from an earlier public release. Confirm the hosted feed matches the staged manifest after activation, then use Updates → Check for Updates on the signed Odin installation to confirm its live network path.

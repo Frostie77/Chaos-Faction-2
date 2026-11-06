@@ -2,5 +2,16 @@
   "schema_version": 1,
   "channel": "stable",
   "package": "io.github.frostie77.chaosfaction2",
-  "latest": null
+  "latest": {
+    "package": "io.github.frostie77.chaosfaction2",
+    "version_name": "0.1.0",
+    "version_code": 2,
+    "release_tag": "v0.1.0",
+    "source_commit": "8294635bb705b5be2337ebf140e6985bdcf4d2d0",
+    "certificate_sha256": "807a5ceb18503c6da705f5105f93ae97cee22cf3e9233c038706f0236f09f280",
+    "min_sdk": 26,
+    "apk_asset": "Chaos-Faction-2-v0.1.0-Android.apk",
+    "apk_size": 30487132,
+    "apk_sha256": "8b5ab276f9ec77da8fc9dae8ec042d16d44f3d34ab3364591b56a9afe54d8b35"
+  }
 }
