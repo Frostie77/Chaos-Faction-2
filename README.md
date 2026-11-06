@@ -40,6 +40,8 @@ FrostFrontend includes original 800×600 proportions or stretch display, sound s
 
 The stable checker is isolated to `Frostie77/Chaos-Faction-2` and package `io.github.frostie77.chaosfaction2`. No stable release is published yet. Development APKs are excluded from stable updates. Public release signing and feed activation follow device testing.
 
+The first signed candidate is **v0.1.0**, Android build **2**. [Release preparation](RELEASING.md) and [draft notes](RELEASE_DRAFT.md) are included; the public signing key is created and kept on the owner's PC.
+
 ## Credits
 
 - **Original game:** [Chaos Faction 2](https://www.newgrounds.com/portal/view/535370), by [EON / Dissolute Productions](https://eon.newgrounds.com/).
