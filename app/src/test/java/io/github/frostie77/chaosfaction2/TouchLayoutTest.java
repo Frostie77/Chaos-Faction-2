@@ -13,7 +13,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import io.github.frostfrontend.FrostFrontendView;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -49,9 +48,14 @@ public class TouchLayoutTest {
     }
 
     private static Object field(Object object, String name) throws Exception {
-        Field field = object.getClass().getDeclaredField(name);
-        field.setAccessible(true);
-        return field.get(object);
+        for (Class<?> type = object.getClass(); type != null; type = type.getSuperclass()) {
+            try {
+                Field field = type.getDeclaredField(name);
+                field.setAccessible(true);
+                return field.get(object);
+            } catch (NoSuchFieldException ignored) {}
+        }
+        throw new NoSuchFieldException(name);
     }
 
     private static float[] center(ChaosFaction2TouchControls view, int id) throws Exception {
@@ -200,12 +204,10 @@ public class TouchLayoutTest {
             MainActivity activity = controller.get();
             FrostFrontendView frontend = (FrostFrontendView) field(activity, "frontend");
             ChaosFaction2TouchControls view = (ChaosFaction2TouchControls) field(activity, "touchControls");
-            Method item = MainActivity.class.getDeclaredMethod("handleItem", String.class, int.class);
-            item.setAccessible(true);
             frontend.open();
-            item.invoke(activity, "touch_edit", 1);
+            frontend.editTouchLayout();
             assertTrue(frontend.isOpen());
-            assertEquals(View.GONE, frontend.getVisibility());
+            assertTrue(frontend.isEditingTouchLayout());
             assertEquals(View.VISIBLE, view.getVisibility());
             controller.pause().resume();
             assertTrue(frontend.isOpen());
@@ -214,10 +216,10 @@ public class TouchLayoutTest {
             assertTrue(frontend.isOpen());
             assertEquals(View.VISIBLE, frontend.getVisibility());
             assertEquals(View.GONE, view.getVisibility());
-            item.invoke(activity, "touch_edit", 1);
+            frontend.editTouchLayout();
             activity.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BUTTON_START));
             assertTrue(frontend.isOpen());
-            assertFalse((boolean) field(activity, "editingTouchLayout"));
+            assertFalse(frontend.isEditingTouchLayout());
         } finally {
             controller.pause().stop().destroy();
             context.deleteFile("chaos-faction-2.swf");

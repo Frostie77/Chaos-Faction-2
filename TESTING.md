@@ -26,3 +26,7 @@ The initial Odin build was reported working by the user. The next build removes 
 `TouchLayoutTest` exercises the real Android touch view with Robolectric: saved positions and relocated hit areas, cancellation and reset, proportional resizing and mirrored layouts, screen boundaries, pointer-ID changes, releasing held keys, removal of the old Pause hit area, invalid stored positions and Activity editor/pause lifecycle. CI runs it before assembling the APKs.
 
 Gameplay, performance, double jump, shield/stomp, both attacks, held weapon melee, weapon drop, touch layout, remapping, sound/speaker test, saves across restarts and background/resume need device confirmation before release. Full-game compatibility and multiplayer controller assignment are not yet established.
+
+## Shared touch layout integration
+
+The layout editor now comes from FrostFrontend, pinned by `FROSTFRONTEND_REVISION`. CF2 subclasses `FrostTouchControls` for artwork and game input and registers it with `FrostFrontendView.setTouchControls`. The library supplies the Touch Settings row, toolbar, drag handling, persistent positions and pause-safe editing. CF2 continues using its existing layout preference store and stable control IDs. CI runs the shared library tests and the nine CF2 Android touch-layout tests before building Debug and Release.

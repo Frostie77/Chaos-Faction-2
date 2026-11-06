@@ -32,6 +32,8 @@ Remap actions in FrostFrontend. Keep the game's keyboard bindings at their defau
 
 In **Touch Settings → Edit Touch Layout**, drag any action button or the movement pad to reposition it. **Save** remembers the layout between launches; **Cancel** keeps your previous layout. **Reset** previews the default positions, which are applied when saved. Back or gamepad B cancels editing; Start saves and returns to Touch Settings. The game stays paused throughout editing. Control Sides mirrors the custom layout; choosing a Control Position preset replaces manual positions.
 
+The layout editor and position storage are shared FrostFrontend features. CF2 supplies its own control artwork and game actions and retains its existing saved layouts when moving to the shared implementation.
+
 FrostFrontend includes original 800×600 proportions or stretch display, sound settings, a speaker test, controller mapping and touch layout settings. The initial CF2 launcher icon is temporary.
 
 ## Updates

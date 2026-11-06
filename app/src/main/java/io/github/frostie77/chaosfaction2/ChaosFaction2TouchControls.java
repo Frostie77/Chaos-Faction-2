@@ -7,37 +7,29 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.view.MotionEvent;
-import android.view.View;
+import io.github.frostfrontend.FrostTouchControls;
 
 /**
  * Chaos Faction 2’s game-specific touchscreen controls.
  * The same held-key bridge used by physical inputs keeps multi-touch working.
  */
-public final class ChaosFaction2TouchControls extends View {
+public final class ChaosFaction2TouchControls extends FrostTouchControls {
     public interface Input { void key(String key, boolean down); }
 
     private final Input input;
     private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private static final String[] KEYS = {"left", "right", "up", "down", "attack1", "attack2", "melee", "drop"};
     private static final String[] CONTROLS = {"movement", "attack1", "attack2", "melee", "drop"};
-    private final SharedPreferences layoutPreferences;
-    private final float[] customX = new float[CONTROLS.length], customY = new float[CONTROLS.length];
-    private final float[] centerX = new float[CONTROLS.length], centerY = new float[CONTROLS.length];
     private final boolean[] pressed = new boolean[KEYS.length];
     private int movePointer = -1, attack1Pointer = -1, attack2Pointer = -1, meleePointer = -1, dropPointer = -1;
     private float movementX, movementY, attack1X, attack1Y, attack2X, attack2Y, meleeX, meleeY, dropX, dropY, radius;
-    private boolean editing;
-    private int editPointer = -1, editControl = -1;
-    private float dragOffsetX, dragOffsetY;
     private float thumbX, thumbY; // normalized joystick direction
     private int sizeIndex = 1, opacityIndex = 1, padMode, positionIndex = 1;
     private boolean swapped;
 
     public ChaosFaction2TouchControls(Context context, Input input) {
-        super(context);
+        super(context, context.getSharedPreferences("chaosfaction2_touch_layout", Context.MODE_PRIVATE), CONTROLS);
         this.input = input;
-        layoutPreferences = context.getSharedPreferences("chaosfaction2_touch_layout", Context.MODE_PRIVATE);
-        loadLayout();
         setClickable(true);
     }
 
@@ -50,86 +42,8 @@ public final class ChaosFaction2TouchControls extends View {
         invalidate();
     }
 
-    private float dp(float n) { return n * getResources().getDisplayMetrics().density; }
-
-    private void loadLayout() {
-        for (int i = 0; i < CONTROLS.length; i++) {
-            float x = layoutPreferences.getFloat(CONTROLS[i] + "_x", Float.NaN);
-            float y = layoutPreferences.getFloat(CONTROLS[i] + "_y", Float.NaN);
-            boolean valid = Float.isFinite(x) && Float.isFinite(y) && x >= 0f && x <= 1f && y >= 0f && y <= 1f;
-            customX[i] = valid ? x : Float.NaN;
-            customY[i] = valid ? y : Float.NaN;
-        }
-    }
-
-    private void saveLayout() {
-        SharedPreferences.Editor editor = layoutPreferences.edit();
-        for (int i = 0; i < CONTROLS.length; i++) {
-            if (Float.isNaN(customX[i])) {
-                editor.remove(CONTROLS[i] + "_x").remove(CONTROLS[i] + "_y");
-            } else {
-                editor.putFloat(CONTROLS[i] + "_x", customX[i]).putFloat(CONTROLS[i] + "_y", customY[i]);
-            }
-        }
-        editor.apply();
-    }
-
-    public boolean hasCustomLayout() {
-        for (float x : customX) if (!Float.isNaN(x)) return true;
-        return false;
-    }
-
-    public void beginEditing() {
-        releaseAll();
-        editing = true;
-        invalidate();
-    }
-
-    public void finishEditing(boolean save) {
-        if (save) {
-            computeLayout();
-            // Save the visible position if resizing or a larger control size clamped an older layout.
-            if (getWidth() > 0 && getHeight() > 0) {
-                for (int i = 0; i < CONTROLS.length; i++) {
-                    if (!Float.isNaN(customX[i])) storePosition(i, centerX[i], centerY[i]);
-                }
-            }
-            saveLayout();
-        } else loadLayout();
-        editing = false;
-        releaseAll();
-    }
-
-    /** Reset is a preview in the editor; Cancel restores the saved layout. */
-    public void resetLayout() {
-        java.util.Arrays.fill(customX, Float.NaN);
-        java.util.Arrays.fill(customY, Float.NaN);
-        if (!editing) saveLayout();
-        releaseAll();
-    }
-
-    private float bounded(float value, float extent, float length, float topInset) {
-        float margin = extent + dp(4);
-        if (length <= margin * 2f) return length / 2f;
-        return Math.max(Math.min(margin + topInset, length - margin), Math.min(length - margin, value));
-    }
-
-    private void storePosition(int id, float x, float y) {
-        customX[id] = swapped ? 1f - x / getWidth() : x / getWidth();
-        customY[id] = y / getHeight();
-    }
-
-    private void position(int id, float x, float y) {
-        if (!Float.isNaN(customX[id])) {
-            x = (swapped ? 1f - customX[id] : customX[id]) * getWidth();
-            y = customY[id] * getHeight();
-        }
-        float extent = radius * (id == 0 ? 1.04f : 0.56f);
-        centerX[id] = bounded(x, extent, getWidth(), 0f);
-        centerY[id] = bounded(y, extent, getHeight(), editing ? dp(76) : 0f);
-    }
-
-    private void computeLayout() {
+    @Override protected void computeLayout() {
+        setLayoutMirrored(swapped);
         float scale = new float[]{0.84f, 1f, 1.16f}[sizeIndex];
         float inset = dp(new float[]{14, 26, 42}[positionIndex]);
         radius = dp(59) * scale;
@@ -145,11 +59,11 @@ public final class ChaosFaction2TouchControls extends View {
         meleeY = attack1Y - radius * 1.40f;
         dropX = attack2X;
         dropY = attack2Y - radius * 1.40f;
-        position(0, movementX, movementY);
-        position(1, attack1X, attack1Y);
-        position(2, attack2X, attack2Y);
-        position(3, meleeX, meleeY);
-        position(4, dropX, dropY);
+        positionControl(0, movementX, movementY, radius * 1.04f, radius * 1.27f);
+        positionControl(1, attack1X, attack1Y, radius * 0.56f, radius * 0.62f);
+        positionControl(2, attack2X, attack2Y, radius * 0.56f, radius * 0.62f);
+        positionControl(3, meleeX, meleeY, radius * 0.56f, radius * 0.62f);
+        positionControl(4, dropX, dropY, radius * 0.56f, radius * 0.62f);
         movementX = centerX[0]; movementY = centerY[0];
         attack1X = centerX[1]; attack1Y = centerY[1];
         attack2X = centerX[2]; attack2Y = centerY[2];
@@ -185,9 +99,8 @@ public final class ChaosFaction2TouchControls extends View {
         invalidate();
     }
 
-    public void releaseAll() {
+    @Override protected void releaseGameKeys() {
         movePointer = attack1Pointer = attack2Pointer = meleePointer = dropPointer = -1;
-        editPointer = editControl = -1;
         thumbX = thumbY = 0f;
         for (int k = 0; k < pressed.length; k++) set(k, false);
         invalidate();
@@ -201,9 +114,7 @@ public final class ChaosFaction2TouchControls extends View {
         return Color.argb(Math.max(0, Math.min(255, alpha)), red, green, blue);
     }
 
-    @Override protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-        computeLayout();
+    @Override protected void drawControls(Canvas canvas) {
         int alpha = new int[]{80, 136, 196}[opacityIndex];
         if (padMode == 1) drawDpad(canvas, alpha);
         else drawJoystick(canvas, alpha);
@@ -211,13 +122,7 @@ public final class ChaosFaction2TouchControls extends View {
         drawAction(canvas, attack2X, attack2Y, radius * 0.56f, "Attack 2", pressed[5], alpha);
         drawAction(canvas, meleeX, meleeY, radius * 0.56f, "Melee", pressed[6], alpha);
         drawAction(canvas, dropX, dropY, radius * 0.56f, "Drop", pressed[7], alpha);
-        if (editing && editControl >= 0) {
-            paint.setStyle(Paint.Style.STROKE);
-            paint.setStrokeWidth(dp(3));
-            paint.setColor(0xFF79D4FF);
-            canvas.drawCircle(centerX[editControl], centerY[editControl],
-                radius * (editControl == 0 ? 1.10f : 0.63f), paint);
-        }
+
     }
 
     /** Outer fixed ring and a moving thumbstick, rather than a MOVE text disc. */
@@ -342,9 +247,7 @@ public final class ChaosFaction2TouchControls extends View {
         canvas.drawText(label, x, y - (fm.ascent + fm.descent) / 2f, paint);
     }
 
-    @Override public boolean onTouchEvent(MotionEvent event) {
-        computeLayout();
-        if (editing) return editTouch(event);
+    @Override protected boolean onGameplayTouch(MotionEvent event) {
         int action = event.getActionMasked();
         int changed = event.getActionIndex();
         if (action == MotionEvent.ACTION_CANCEL) {
@@ -402,38 +305,4 @@ public final class ChaosFaction2TouchControls extends View {
         return true;
     }
 
-    private boolean editTouch(MotionEvent event) {
-        int action = event.getActionMasked(), changed = event.getActionIndex();
-        if (action == MotionEvent.ACTION_CANCEL) {
-            editPointer = editControl = -1;
-        } else if ((action == MotionEvent.ACTION_DOWN || action == MotionEvent.ACTION_POINTER_DOWN) && editPointer == -1) {
-            float x = event.getX(changed), y = event.getY(changed), nearest = Float.MAX_VALUE;
-            for (int i = 0; i < CONTROLS.length; i++) {
-                float distance = (float) Math.hypot(x - centerX[i], y - centerY[i]);
-                if (distance <= radius * (i == 0 ? 1.27f : 0.62f) && distance < nearest) {
-                    editControl = i;
-                    nearest = distance;
-                }
-            }
-            if (editControl >= 0) {
-                editPointer = event.getPointerId(changed);
-                dragOffsetX = x - centerX[editControl];
-                dragOffsetY = y - centerY[editControl];
-            }
-        } else if (action == MotionEvent.ACTION_MOVE && editPointer != -1) {
-            int p = event.findPointerIndex(editPointer);
-            if (p >= 0 && getWidth() > 0 && getHeight() > 0) {
-                float extent = radius * (editControl == 0 ? 1.04f : 0.56f);
-                float x = bounded(event.getX(p) - dragOffsetX, extent, getWidth(), 0f);
-                float y = bounded(event.getY(p) - dragOffsetY, extent, getHeight(), dp(76));
-                storePosition(editControl, x, y);
-            }
-        } else if ((action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_POINTER_UP) &&
-                event.getPointerId(changed) == editPointer) {
-            editPointer = editControl = -1;
-        }
-        invalidate();
-        // Editing consumes every gesture, including empty space, so none reaches the game.
-        return true;
-    }
 }

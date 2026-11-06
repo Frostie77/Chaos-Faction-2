@@ -39,7 +39,7 @@ jobs:
           tar -xzf /tmp/cf2-ruffle.tgz -C /tmp/cf2-ruffle
           cp -R /tmp/cf2-ruffle/package/. app/src/main/assets/www/ruffle/
       - name: Build Debug and Release
-        run: gradle --no-daemon :app:testDebugUnitTest :app:assembleDebug :app:assembleRelease
+        run: gradle --no-daemon :frostfrontend:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug :app:assembleRelease
       - name: Verify Android identity, launcher and game-free payload
         run: |
           python3 - <<'PY'
