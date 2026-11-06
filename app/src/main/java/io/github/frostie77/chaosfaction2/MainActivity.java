@@ -62,6 +62,8 @@ public final class MainActivity extends Activity {
     private final FrostSpeakerTest speakerTest = new FrostSpeakerTest();
     private Button menuButton;
     private ChaosFaction2TouchControls touchControls;
+    private boolean editingTouchLayout;
+    private LinearLayout touchLayoutToolbar;
     private boolean showingButtonMap;
     private boolean showingMovementSettings;
     private boolean updateChecking, updateCheckedThisLaunch, updateNoticeShown;
@@ -379,8 +381,12 @@ public final class MainActivity extends Activity {
                             item("touch_sides", "Control Sides",
                                 preferences.getBoolean("touch_sides", false) ? "Swapped" : "Standard", ""),
                             item("touch_position", "Control Position",
-                                new String[]{"Edge", "Normal", "Inset"}[Math.max(0,
-                                    Math.min(2, preferences.getInt("touch_position", 1)))], ""),
+                                touchControls.hasCustomLayout() ? "Custom" :
+                                    new String[]{"Edge", "Normal", "Inset"}[Math.max(0,
+                                        Math.min(2, preferences.getInt("touch_position", 1)))],
+                                "Choosing a preset replaces manual positions"),
+                            item("touch_edit", "Edit Touch Layout", "",
+                                "Drag each button and the movement pad, then save"),
                             item("touch_reset", "Reset Touch Controls", "", "")
                         );
                     case "updates":
@@ -410,7 +416,8 @@ public final class MainActivity extends Activity {
                 if (itemId.equals("display") || itemId.equals("automatic") ||
                     itemId.equals("directions") ||
                     itemId.equals("deadzone") || itemId.startsWith("invert_") ||
-                    itemId.startsWith("touch_") && !itemId.equals("touch_reset"))
+                    itemId.startsWith("touch_") && !itemId.equals("touch_reset") &&
+                        !itemId.equals("touch_edit"))
                     handleItem(itemId, direction);
             }
 
@@ -435,6 +442,7 @@ public final class MainActivity extends Activity {
     }
 
     private void handleItem(String id, int direction) {
+        if ("touch_edit".equals(id)) { beginTouchLayoutEdit(); return; }
         if ("speaker_test".equals(id)) {
             if (speakerTest.start())
                 android.widget.Toast.makeText(this, "LEFT, then RIGHT, then BOTH",
@@ -508,10 +516,12 @@ public final class MainActivity extends Activity {
         else if ("touch_position".equals(id)) {
             int v = preferences.getInt(id, 1);
             preferences.edit().putInt(id, (v + direction + 3) % 3).apply();
+            touchControls.resetLayout();
         } else if ("touch_reset".equals(id)) {
             preferences.edit().putInt("touch_mode", 0).putInt("touch_size", 1)
                 .putInt("touch_opacity", 1).putInt("touch_pad", 0)
                 .putBoolean("touch_sides", false).putInt("touch_position", 1).apply();
+            touchControls.resetLayout();
         } else if ("check".equals(id)) {
             startUpdateCheck(true);
             return;
@@ -524,6 +534,55 @@ public final class MainActivity extends Activity {
             openUpdateRelease();
             return;
         }
+        updateTouchControls();
+    }
+
+    private void beginTouchLayoutEdit() {
+        if (editingTouchLayout || touchControls == null || frontend == null || !frontend.isOpen()) return;
+        releaseGameInputs();
+        editingTouchLayout = true;
+        // Keep the frontend logically open so its existing pause survives editing and app resume.
+        frontend.setVisibility(View.GONE);
+        touchControls.beginEditing();
+        updateTouchControls();
+        touchControls.bringToFront();
+
+        touchLayoutToolbar = new LinearLayout(this);
+        touchLayoutToolbar.setOrientation(LinearLayout.VERTICAL);
+        touchLayoutToolbar.setGravity(Gravity.CENTER);
+        touchLayoutToolbar.setBackgroundColor(0xED211D26);
+        TextView instructions = new TextView(this);
+        instructions.setText("Drag each control to move it");
+        instructions.setTextColor(Color.WHITE);
+        instructions.setTextSize(14);
+        touchLayoutToolbar.addView(instructions);
+        LinearLayout actions = new LinearLayout(this);
+        actions.setGravity(Gravity.CENTER);
+        String[] labels = {"Save", "Cancel", "Reset"};
+        for (int i = 0; i < labels.length; i++) {
+            Button button = new Button(this);
+            button.setText(labels[i]);
+            final int action = i;
+            button.setOnClickListener(v -> {
+                if (action == 2) touchControls.resetLayout();
+                else finishTouchLayoutEdit(action == 0);
+            });
+            actions.addView(button);
+        }
+        touchLayoutToolbar.addView(actions);
+        root.addView(touchLayoutToolbar, new FrameLayout.LayoutParams(-1, dp(76), Gravity.TOP));
+    }
+
+    private void finishTouchLayoutEdit(boolean save) {
+        if (!editingTouchLayout) return;
+        touchControls.finishEditing(save);
+        editingTouchLayout = false;
+        root.removeView(touchLayoutToolbar);
+        touchLayoutToolbar = null;
+        frontend.setVisibility(View.VISIBLE);
+        frontend.bringToFront();
+        frontend.refresh();
+        frontend.requestFocus();
         updateTouchControls();
     }
 
@@ -606,8 +665,8 @@ public final class MainActivity extends Activity {
     private void updateTouchControls() {
         if (touchControls == null) return;
         int mode = preferences.getInt("touch_mode", 0);
-        boolean show = webView != null && (frontend == null || !frontend.isOpen()) &&
-            (mode == 1 || mode == 0 && lastInputWasTouch);
+        boolean show = webView != null && (editingTouchLayout ||
+            (frontend == null || !frontend.isOpen()) && (mode == 1 || mode == 0 && lastInputWasTouch));
         if (!show) touchControls.releaseAll();
         touchControls.setVisibility(show ? View.VISIBLE : View.GONE);
         touchControls.configure(preferences.getInt("touch_size", 1),
@@ -619,6 +678,16 @@ public final class MainActivity extends Activity {
 
     @Override public boolean dispatchKeyEvent(KeyEvent event) {
         int code = event.getKeyCode();
+        if (editingTouchLayout) {
+            if (code == KeyEvent.KEYCODE_VOLUME_UP || code == KeyEvent.KEYCODE_VOLUME_DOWN ||
+                    code == KeyEvent.KEYCODE_VOLUME_MUTE) return super.dispatchKeyEvent(event);
+            if (event.getAction() == KeyEvent.ACTION_DOWN && event.getRepeatCount() == 0) {
+                if (code == KeyEvent.KEYCODE_BACK || code == KeyEvent.KEYCODE_BUTTON_B ||
+                        code == KeyEvent.KEYCODE_ESCAPE) finishTouchLayoutEdit(false);
+                else if (code == KeyEvent.KEYCODE_BUTTON_START) finishTouchLayoutEdit(true);
+            }
+            return true;
+        }
         if (frontend != null && frontend.isOpen()) return frontend.handleKeyEvent(event);
         if (frontend != null && code == KeyEvent.KEYCODE_BUTTON_START) {
             if (event.getAction() == KeyEvent.ACTION_DOWN && event.getRepeatCount() == 0)
@@ -641,6 +710,7 @@ public final class MainActivity extends Activity {
     }
 
     @Override public boolean dispatchGenericMotionEvent(MotionEvent e) {
+        if (editingTouchLayout) return true;
         if (frontend != null && frontend.handleGenericMotionEvent(e)) return true;
         if (webView != null && (e.getSource() & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK &&
                 e.getAction() == MotionEvent.ACTION_MOVE) {
@@ -709,7 +779,8 @@ public final class MainActivity extends Activity {
     }
 
     @Override public void onBackPressed() {
-        if (frontend != null && frontend.isOpen()) frontend.back();
+        if (editingTouchLayout) finishTouchLayoutEdit(false);
+        else if (frontend != null && frontend.isOpen()) frontend.back();
         else super.onBackPressed();
     }
 

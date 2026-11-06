@@ -21,4 +21,8 @@ A desktop Chromium smoke test loaded the exact supplied SWF using the pinned run
 
 ## Odin acceptance
 
+The initial Odin build was reported working by the user. The next build removes the redundant touch Pause button and adds Touch Settings → Edit Touch Layout. Confirm dragging all four buttons and the movement pad, saving and restarting, Cancel, Reset followed by Save/Cancel, both pad types, swapped sides, size changes and background/resume while editing. The game must remain paused until FrostFrontend closes, and editor gestures must not trigger attacks or movement.
+
+`TouchLayoutTest` exercises the real Android touch view with Robolectric: saved positions and relocated hit areas, cancellation and reset, proportional resizing and mirrored layouts, screen boundaries, pointer-ID changes, releasing held keys, removal of the old Pause hit area, invalid stored positions and Activity editor/pause lifecycle. CI runs it before assembling the APKs.
+
 Gameplay, performance, double jump, shield/stomp, both attacks, held weapon melee, weapon drop, touch layout, remapping, sound/speaker test, saves across restarts and background/resume need device confirmation before release. Full-game compatibility and multiplayer controller assignment are not yet established.
