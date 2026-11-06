@@ -86,7 +86,16 @@ public final class ChaosFaction2TouchControls extends View {
     }
 
     public void finishEditing(boolean save) {
-        if (save) saveLayout(); else loadLayout();
+        if (save) {
+            computeLayout();
+            // Save the visible position if resizing or a larger control size clamped an older layout.
+            if (getWidth() > 0 && getHeight() > 0) {
+                for (int i = 0; i < CONTROLS.length; i++) {
+                    if (!Float.isNaN(customX[i])) storePosition(i, centerX[i], centerY[i]);
+                }
+            }
+            saveLayout();
+        } else loadLayout();
         editing = false;
         releaseAll();
     }
@@ -103,6 +112,11 @@ public final class ChaosFaction2TouchControls extends View {
         float margin = extent + dp(4);
         if (length <= margin * 2f) return length / 2f;
         return Math.max(Math.min(margin + topInset, length - margin), Math.min(length - margin, value));
+    }
+
+    private void storePosition(int id, float x, float y) {
+        customX[id] = swapped ? 1f - x / getWidth() : x / getWidth();
+        customY[id] = y / getHeight();
     }
 
     private void position(int id, float x, float y) {
@@ -412,8 +426,7 @@ public final class ChaosFaction2TouchControls extends View {
                 float extent = radius * (editControl == 0 ? 1.04f : 0.56f);
                 float x = bounded(event.getX(p) - dragOffsetX, extent, getWidth(), 0f);
                 float y = bounded(event.getY(p) - dragOffsetY, extent, getHeight(), dp(76));
-                customX[editControl] = swapped ? 1f - x / getWidth() : x / getWidth();
-                customY[editControl] = y / getHeight();
+                storePosition(editControl, x, y);
             }
         } else if ((action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_POINTER_UP) &&
                 event.getPointerId(changed) == editPointer) {

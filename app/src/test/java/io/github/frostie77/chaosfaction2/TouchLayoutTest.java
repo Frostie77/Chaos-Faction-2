@@ -155,6 +155,17 @@ public class TouchLayoutTest {
         assertTrue(inputs.isEmpty());
     }
 
+    @Test public void savingAfterResizeUsesTheVisiblePreviewPosition() throws Exception {
+        ChaosFaction2TouchControls view = controls();
+        view.beginEditing(); drag(view, 1, 580, 150); view.finishEditing(true);
+        view.layout(0, 0, 1000, 300);
+        view.beginEditing();
+        float[] preview = center(view, 1);
+        assertTrue(preview[1] > 100);
+        view.finishEditing(true);
+        assertArrayEquals(preview, center(view, 1), 0.01f);
+    }
+
     @Test public void enteringEditorReleasesHeldKeysAndOldPauseAreaPassesThrough() throws Exception {
         ChaosFaction2TouchControls view = controls();
         float[] attack = center(view, 1);
